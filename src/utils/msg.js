@@ -11,6 +11,9 @@ module.exports.MSG = {
     ADMIN_FETCH_SUCCESS: "Admin fetched successfully",
     ADMIN_PASSWORD_UPDATE_FAILED: "Admin password updation failed",
     ADMIN_PASSWORD_UPDATED: "Admin password updated",
+    ADMIN_DELETE_SUCCESS: "Admin deleted successfully",
+    ADMIN_UPDATE_SUCCESS: "Admin updated successfully",
+    ADMIN_PROFILE_FETCH_SUCCESS: "Admin profile fetched successfully",
 
     USER_REGISTER_SUCCESS: "User registered successfully",
     USER_REGISTER_FAILED: "User registration failed",

@@ -14,7 +14,7 @@ module.exports.registerAdmin = async (req, res) => {
     try {
         console.log(req.body);
 
-        const admin = await adminAuthService.fetchSingleAdmin({ email: req.body.email });
+        const admin = await adminAuthService.fetchSingleAdmin({ email: req.body.email, isDelete: false, isActive: true }, true);
 
         if (admin) {
             return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.ADMIN_ALREADY_EXISTS));
@@ -46,7 +46,7 @@ module.exports.loginAdmin = async (req, res) => {
     try {
         console.log(req.body);
 
-        const admin = await adminAuthService.fetchSingleAdmin({ email: req.body.email });
+        const admin = await adminAuthService.fetchSingleAdmin({ email: req.body.email, isDelete: false, isActive: true }, false);
 
         console.log(admin);
 
@@ -62,10 +62,11 @@ module.exports.loginAdmin = async (req, res) => {
 
         // JWT Token
         const payload = {
-            adminId: admin.id
+            id: admin.id,
+            isAdmin: true,
         };
 
-        const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: "1h" });
+        const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: "7d" });
 
         console.log(token);
 
@@ -79,7 +80,7 @@ module.exports.loginAdmin = async (req, res) => {
 module.exports.forgotPassword = async (req, res) => {
     try {
         console.log(req.body);
-        const admin = await adminAuthService.fetchSingleAdmin({ email: req.body.email });
+        const admin = await adminAuthService.fetchSingleAdmin({ email: req.body.email, isDelete: false, isActive: true }, false);
 
         if (!admin) {
             return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.ADMIN_NOT_FOUND));
@@ -114,7 +115,7 @@ module.exports.verifyOTP = async (req, res) => {
     try {
         console.log(req.body);
 
-        const admin = await adminAuthService.fetchSingleAdmin({ email: req.body.email });
+        const admin = await adminAuthService.fetchSingleAdmin({ email: req.body.email, isDelete: false, isActive: true }, false);
 
         if (!admin) {
             return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.ADMIN_NOT_FOUND));
@@ -157,7 +158,7 @@ module.exports.newPassword = async (req, res) => {
     try {
         console.log(req.body);
 
-        const admin = await adminAuthService.fetchSingleAdmin({ email: req.body.email });
+        const admin = await adminAuthService.fetchSingleAdmin({ email: req.body.email, isDelete: false, isActive: true }, true);
 
         req.body.new_password = await bcrypt.hash(req.body.new_password, 11);
 
@@ -177,9 +178,98 @@ module.exports.newPassword = async (req, res) => {
 
 module.exports.fetchAllAdmin = async (req, res) => {
     try {
+
+        console.log("Admin : ", req.admin);
+        console.log("User : ", req.user);
+
+        if (req.user) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.UNAUTHORIZED_ACCESS));
+        }
+
         const allAdmin = await adminAuthService.fetchAllAdmin();
 
         return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.ADMIN_FETCH_SUCCESS, allAdmin));
+    } catch (err) {
+        console.log("Error : ", err);
+    }
+}
+
+module.exports.deleteAdmin = async (req, res) => {
+    try {
+
+        if (req.user) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.UNAUTHORIZED_ACCESS));
+        }
+        console.log(req.query);
+
+        const admin = await adminAuthService.fetchSingleAdmin({ _id: req.query.id, isDelete: false, isActive: true }, true);
+
+        if (!admin) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.ADMIN_NOT_FOUND));
+        }
+
+        const deletedAdmin = await adminAuthService.updateAdmin(req.query.id, { isDelete: true, isActive: false });
+
+        return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.ADMIN_DELETE_SUCCESS, deletedAdmin));
+    } catch (err) {
+        console.log("Error : ", err);
+    }
+}
+
+module.exports.updateAdmin = async (req, res) => {
+    try {
+
+        if (req.user) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.UNAUTHORIZED_ACCESS));
+        }
+        console.log(req.params);
+        console.log(req.body);
+
+        const admin = await adminAuthService.fetchSingleAdmin({ _id: req.params.id, isDelete: false, isActive: true }, true);
+
+        if (!admin) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.ADMIN_NOT_FOUND));
+        }
+
+        const updatedAmdin = await adminAuthService.updateAdmin(req.params.id, req.body);
+
+        return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.ADMIN_UPDATE_SUCCESS, updatedAmdin));
+    } catch (err) {
+        console.log("Error : ", err);
+    }
+}
+
+module.exports.activeOrInActiveAdmin = async (req, res) => {
+    try {
+
+        if (req.user) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.UNAUTHORIZED_ACCESS));
+        }
+        console.log(req.query);
+
+        const admin = await adminAuthService.fetchSingleAdmin({ _id: req.query.id, isDelete: false }, true);
+
+        if (!admin) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.ADMIN_NOT_FOUND));
+        }
+
+        const updatedAdmin = await adminAuthService.updateAdmin(req.query.id, { isActive: !admin.isActive });
+
+        return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, `${admin.first_name} ${admin.last_name} is ${updatedAdmin.isActive ? 'active' : 'inactive'}`));
+    } catch (err) {
+        console.log("Error : ", err);
+    }
+}
+
+
+module.exports.adminProfile = async (req, res) => {
+    try {
+
+        if (req.user) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.UNAUTHORIZED_ACCESS));
+        }
+
+        return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.ADMIN_PROFILE_FETCH_SUCCESS, req.admin));
     } catch (err) {
         console.log("Error : ", err);
     }

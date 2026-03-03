@@ -9,9 +9,13 @@ module.exports = class AdminAuthService {
         }
     }
 
-    async fetchSingleAdmin(body) {
+    async fetchSingleAdmin(body, isSelect) {
         try {
-            return await Admin.findOne(body);
+            if (isSelect) {
+                return await Admin.findOne(body).select('_id first_name last_name email phone isActive create_at update_at');
+            } else {
+                return await Admin.findOne(body);
+            }
         } catch (err) {
             console.log("Fetch Sigle Admin Error: ", err);
         }
@@ -19,7 +23,7 @@ module.exports = class AdminAuthService {
 
     async fetchAllAdmin() {
         try {
-            return await Admin.find();
+            return await Admin.find({ isDelete: false }).select('_id first_name last_name email phone isActive create_at update_at');
         } catch (err) {
             console.log("Fetch All Admin Error: ", err);
         }
@@ -27,7 +31,7 @@ module.exports = class AdminAuthService {
 
     async updateAdmin(id, body) {
         try {
-            return await Admin.findByIdAndUpdate(id, body, { new: true });
+            return await Admin.findByIdAndUpdate(id, body, { new: true }).select('_id first_name last_name email phone isActive');
         } catch (err) {
             console.log("Update Admin Error: ", err);
         }

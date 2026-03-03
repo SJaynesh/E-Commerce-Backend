@@ -56,7 +56,8 @@ module.exports.loginUser = async (req, res) => {
 
         // JWT Token
         const payload = {
-            userId: user.id
+            id: user.id,
+            isAdmin: false
         };
 
         const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: "1h" });
