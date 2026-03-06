@@ -14,7 +14,7 @@ module.exports.registerUser = async (req, res) => {
     try {
         console.log(req.body);
 
-        const user = await userAuthService.fetchSingleUser({ email: req.body.email });
+        const user = await userAuthService.fetchSingleUser({ email: req.body.email, isDelete: false, isActive: true }, true);
 
         if (user) {
             return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.USER_ALREADY_EXISTS));
@@ -42,7 +42,7 @@ module.exports.loginUser = async (req, res) => {
     try {
         console.log(req.body);
 
-        const user = await userAuthService.fetchSingleUser({ email: req.body.email });
+        const user = await userAuthService.fetchSingleUser({ email: req.body.email, isDelete: false, isActive: true }, false);
 
         if (!user) {
             return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.USER_NOT_FOUND));
@@ -73,7 +73,7 @@ module.exports.loginUser = async (req, res) => {
 module.exports.forgotPassword = async (req, res) => {
     try {
         console.log(req.body);
-        const user = await userAuthService.fetchSingleUser({ email: req.body.email });
+        const user = await userAuthService.fetchSingleUser({ email: req.body.email, isDelete: false, isActive: true }, false);
 
         if (!user) {
             return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.USER_NOT_FOUND));
@@ -108,7 +108,7 @@ module.exports.verifyOTP = async (req, res) => {
     try {
         console.log(req.body);
 
-        const user = await userAuthService.fetchSingleUser({ email: req.body.email });
+        const user = await userAuthService.fetchSingleUser({ email: req.body.email, isDelete: false, isActive: true }, false);
 
         if (!user) {
             return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.USER_NOT_FOUND));
@@ -151,7 +151,7 @@ module.exports.newPassword = async (req, res) => {
     try {
         console.log(req.body);
 
-        const user = await userAuthService.fetchSingleUser({ email: req.body.email });
+        const user = await userAuthService.fetchSingleUser({ email: req.body.email, isDelete: false, isActive: true }, true);
 
         console.log(user);
 
@@ -177,9 +177,112 @@ module.exports.newPassword = async (req, res) => {
 
 module.exports.fetchAllUser = async (req, res) => {
     try {
-        const allAdmin = await adminAuthService.fetchAllAdmin();
+        console.log(req.admin);
+        console.log(req.user);
 
-        return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.ADMIN_FETCH_SUCCESS, allAdmin));
+        if (req.user) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.UNAUTHORIZED_ACCESS));
+        }
+
+        const allUsers = await userAuthService.fetchAllUser();
+
+        return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.USER_FETCH_SUCCESS, allUsers));
+    } catch (err) {
+        console.log("Error : ", err);
+    }
+}
+
+module.exports.deleteUser = async (req, res) => {
+    try {
+
+        if (req.user) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.UNAUTHORIZED_ACCESS));
+        }
+        console.log(req.query);
+
+        const user = await userAuthService.fetchSingleUser({ _id: req.query.id, isDelete: false, isActive: true }, true);
+
+        if (!user) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.USER_NOT_FOUND));
+        }
+
+        const deletedUser = await userAuthService.updateUser(req.query.id, { isDelete: true, isActive: false });
+
+        return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.USER_DELETE_SUCCESS, deletedUser));
+    } catch (err) {
+        console.log("Error : ", err);
+    }
+}
+
+module.exports.updateUser = async (req, res) => {
+    try {
+
+        if (req.user) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.UNAUTHORIZED_ACCESS));
+        }
+        console.log(req.query);
+        console.log(req.body);
+
+        const user = await userAuthService.fetchSingleUser({ _id: req.query.id, isDelete: false, isActive: true }, true);
+
+        if (!user) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.USER_NOT_FOUND));
+        }
+
+        const updatedUser = await userAuthService.updateUser(req.query.id, req.body);
+
+        return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.USER_UPDATE_SUCCESS, updatedUser));
+    } catch (err) {
+        console.log("Error : ", err);
+    }
+}
+
+module.exports.activeOrInActiveUser = async (req, res) => {
+    try {
+
+        if (req.user) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.UNAUTHORIZED_ACCESS));
+        }
+        console.log(req.query);
+
+        const user = await userAuthService.fetchSingleUser({ _id: req.query.id, isDelete: false }, true);
+
+        if (!user) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.USER_NOT_FOUND));
+        }
+
+        const updatedUser = await userAuthService.updateUser(req.query.id, { isActive: !user.isActive });
+
+        return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, `${user.first_name} ${user.last_name} is ${updatedUser.isActive ? 'active' : 'inactive'}`));
+    } catch (err) {
+        console.log("Error : ", err);
+    }
+}
+
+module.exports.userProfile = async (req, res) => {
+    try {
+        return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.USER_PROFILE_FETCH_SUCCESS, req.user));
+    } catch (err) {
+        console.log("Error : ", err);
+    }
+}
+
+module.exports.changePassword = async (req, res) => {
+    try {
+
+        const user = await userAuthService.fetchSingleUser({ _id: req.user.id }, false);
+
+        const isPassword = await bcrypt.compare(req.body.current_password, user.password);
+
+        if (!isPassword) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.CHANGE_PASSWORD_FAILED));
+        }
+
+        req.body.new_password = await bcrypt.hash(req.body.new_password, 11);
+
+        await userAuthService.updateUser(req.user.id, { password: req.body.new_password });
+
+        return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.CHANGE_PASSWORD));
     } catch (err) {
         console.log("Error : ", err);
     }

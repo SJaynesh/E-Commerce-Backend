@@ -261,15 +261,37 @@ module.exports.activeOrInActiveAdmin = async (req, res) => {
     }
 }
 
-
 module.exports.adminProfile = async (req, res) => {
     try {
-
         if (req.user) {
             return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.UNAUTHORIZED_ACCESS));
         }
 
         return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.ADMIN_PROFILE_FETCH_SUCCESS, req.admin));
+    } catch (err) {
+        console.log("Error : ", err);
+    }
+}
+
+module.exports.changePassword = async (req, res) => {
+    try {
+        if (req.user) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.UNAUTHORIZED_ACCESS));
+        }
+
+        const admin = await adminAuthService.fetchSingleAdmin({ _id: req.admin.id }, false);
+
+        const isPassword = await bcrypt.compare(req.body.current_password, admin.password);
+
+        if (!isPassword) {
+            return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.CHANGE_PASSWORD_FAILED));
+        }
+
+        req.body.new_password = await bcrypt.hash(req.body.new_password, 11);
+
+        await adminAuthService.updateAdmin(req.admin.id, { password: req.body.new_password });
+
+        return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.CHANGE_PASSWORD));
     } catch (err) {
         console.log("Error : ", err);
     }

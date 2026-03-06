@@ -15,6 +15,7 @@ module.exports.MSG = {
     ADMIN_UPDATE_SUCCESS: "Admin updated successfully",
     ADMIN_PROFILE_FETCH_SUCCESS: "Admin profile fetched successfully",
 
+
     USER_REGISTER_SUCCESS: "User registered successfully",
     USER_REGISTER_FAILED: "User registration failed",
     USER_LOGIN_SUCCESS: "User login successfully",
@@ -24,6 +25,13 @@ module.exports.MSG = {
     USER_LOGOUT_SUCCESS: "User logout successfully",
     USER_PASSWORD_UPDATE_FAILED: "User password updation failed",
     USER_PASSWORD_UPDATED: "User password updated",
+    USER_FETCH_SUCCESS: "Users fetched successfully",
+    USER_DELETE_SUCCESS: "User deleted successfully",
+    USER_UPDATE_SUCCESS: "User updated successfully",
+    USER_PROFILE_FETCH_SUCCESS: "User profile fetched successfully",
+
+    CHANGE_PASSWORD_FAILED: "Invalid current password",
+    CHANGE_PASSWORD: "Password updated succuessfully",
 
     TOKEN_GENERATED: "Token generated successfully",
     TOKEN_MISSING: "Token is missing",

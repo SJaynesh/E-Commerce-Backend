@@ -9,9 +9,13 @@ module.exports = class UserAuthService {
         }
     }
 
-    async fetchSingleUser(body) {
+    async fetchSingleUser(body, isSelect) {
         try {
-            return await User.findOne(body);
+            if (isSelect) {
+                return await User.findOne(body).select('_id first_name last_name email phone gender address isActive create_at update_at');
+            } else {
+                return await User.findOne(body);
+            }
         } catch (err) {
             console.log("Fetch Sigle User Error: ", err);
         }
@@ -19,7 +23,7 @@ module.exports = class UserAuthService {
 
     async fetchAllUser() {
         try {
-            return await User.find();
+            return await User.find({ isDelete: false }).select('_id first_name last_name email phone gender address isActive create_at update_at');
         } catch (err) {
             console.log("Fetch All User Error: ", err);
         }
@@ -27,7 +31,7 @@ module.exports = class UserAuthService {
 
     async updateUser(id, body) {
         try {
-            return await User.findByIdAndUpdate(id, body, { new: true });
+            return await User.findByIdAndUpdate(id, body, { new: true }).select('_id first_name last_name email phone gender address isActive create_at update_at');
         } catch (err) {
             console.log("Update User Error: ", err);
         }

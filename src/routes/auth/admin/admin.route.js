@@ -1,6 +1,5 @@
 const express = require('express');
-const { registerAdmin, loginAdmin, fetchAllAdmin, forgotPassword, verifyOTP, newPassword, deleteAdmin, updateAdmin, activeOrInActiveAdmin, adminProfile, } = require('../../../controllers/auth/admin/admin.controller');
-const { authMiddleware } = require('../../../middleware/auth.middleware');
+const { registerAdmin, loginAdmin, fetchAllAdmin, forgotPassword, verifyOTP, newPassword, deleteAdmin, updateAdmin, activeOrInActiveAdmin, adminProfile, changePassword, } = require('../../../controllers/auth/admin/admin.controller');
 
 const adminRoute = express.Router();
 
@@ -13,14 +12,14 @@ adminRoute.post('/new-password', newPassword);
 // localhost:8000/api/auth/admin/register
 // localhost:8000/api/auth/admin/login
 
-// Rest API
 
-adminRoute.use(authMiddleware);
-
+// REST APIs
 adminRoute.get('/', fetchAllAdmin);
 adminRoute.delete('/', deleteAdmin);
 adminRoute.patch('/:id', updateAdmin);
 adminRoute.put('/', activeOrInActiveAdmin);
 adminRoute.get('/profile', adminProfile);
+
+adminRoute.post('/change-password', changePassword);
 
 module.exports = adminRoute;
