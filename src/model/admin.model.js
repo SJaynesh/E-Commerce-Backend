@@ -22,6 +22,10 @@ const adminSchema = mongoose.Schema({
         type: String,
         required: true,
     },
+    profile_image: {
+        type: String,
+        required: true,
+    },
     OTP: {
         type: Number,
         default: 0,

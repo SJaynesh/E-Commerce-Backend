@@ -35,6 +35,7 @@ module.exports.registerUser = async (req, res) => {
 
     } catch (err) {
         console.log("Error : ", err);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.SERVER_ERROR));
     }
 }
 
@@ -67,6 +68,8 @@ module.exports.loginUser = async (req, res) => {
 
     } catch (err) {
         console.log("Error : ", err);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.SERVER_ERROR));
+
     }
 }
 
@@ -101,6 +104,8 @@ module.exports.forgotPassword = async (req, res) => {
 
     } catch (err) {
         console.log("Error : ", err);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.SERVER_ERROR));
+
     }
 }
 
@@ -139,11 +144,10 @@ module.exports.verifyOTP = async (req, res) => {
 
         return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.VERIFY_OTP));
 
-
-
-
     } catch (err) {
         console.log("Error : ", err);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.SERVER_ERROR));
+
     }
 }
 
@@ -172,6 +176,7 @@ module.exports.newPassword = async (req, res) => {
 
     } catch (err) {
         console.log("Error : ", err);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.SERVER_ERROR));
     }
 }
 
@@ -189,6 +194,7 @@ module.exports.fetchAllUser = async (req, res) => {
         return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.USER_FETCH_SUCCESS, allUsers));
     } catch (err) {
         console.log("Error : ", err);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.SERVER_ERROR));
     }
 }
 
@@ -211,6 +217,7 @@ module.exports.deleteUser = async (req, res) => {
         return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.USER_DELETE_SUCCESS, deletedUser));
     } catch (err) {
         console.log("Error : ", err);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.SERVER_ERROR));
     }
 }
 
@@ -228,12 +235,13 @@ module.exports.updateUser = async (req, res) => {
         if (!user) {
             return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.USER_NOT_FOUND));
         }
-
+        req.body.update_at = moment().format('DD/MM/YYYY, h:mm:ss A');
         const updatedUser = await userAuthService.updateUser(req.query.id, req.body);
 
         return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.USER_UPDATE_SUCCESS, updatedUser));
     } catch (err) {
         console.log("Error : ", err);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.SERVER_ERROR));
     }
 }
 
@@ -251,11 +259,12 @@ module.exports.activeOrInActiveUser = async (req, res) => {
             return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.USER_NOT_FOUND));
         }
 
-        const updatedUser = await userAuthService.updateUser(req.query.id, { isActive: !user.isActive });
+        const updatedUser = await userAuthService.updateUser(req.query.id, { isActive: !user.isActive, update_at: moment().format('DD/MM/YYYY, h:mm:ss A') });
 
         return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, `${user.first_name} ${user.last_name} is ${updatedUser.isActive ? 'active' : 'inactive'}`));
     } catch (err) {
         console.log("Error : ", err);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.SERVER_ERROR));
     }
 }
 
@@ -264,6 +273,7 @@ module.exports.userProfile = async (req, res) => {
         return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.USER_PROFILE_FETCH_SUCCESS, req.user));
     } catch (err) {
         console.log("Error : ", err);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.SERVER_ERROR));
     }
 }
 
@@ -285,5 +295,6 @@ module.exports.changePassword = async (req, res) => {
         return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.CHANGE_PASSWORD));
     } catch (err) {
         console.log("Error : ", err);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).json(errorResponse(statusCode.INTERNAL_SERVER_ERROR, true, MSG.SERVER_ERROR));
     }
 }

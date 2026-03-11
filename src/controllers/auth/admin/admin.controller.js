@@ -13,6 +13,8 @@ const adminAuthService = new AdminAuthService();
 module.exports.registerAdmin = async (req, res) => {
     try {
         console.log(req.body);
+        console.log(req.file);
+        console.log(req.file.path);
 
         const admin = await adminAuthService.fetchSingleAdmin({ email: req.body.email, isDelete: false, isActive: true }, true);
 
@@ -26,6 +28,8 @@ module.exports.registerAdmin = async (req, res) => {
 
         req.body.create_at = moment().format('DD/MM/YYYY, h:mm:ss A');
         req.body.update_at = moment().format('DD/MM/YYYY, h:mm:ss A');
+
+        req.body.profile_image = req.file.path;
 
         const newAdmin = await adminAuthService.registerAdmin(req.body);
 
@@ -231,6 +235,8 @@ module.exports.updateAdmin = async (req, res) => {
             return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.ADMIN_NOT_FOUND));
         }
 
+        req.body.update_at = moment().format('DD/MM/YYYY, h:mm:ss A');
+
         const updatedAmdin = await adminAuthService.updateAdmin(req.params.id, req.body);
 
         return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, MSG.ADMIN_UPDATE_SUCCESS, updatedAmdin));
@@ -253,7 +259,7 @@ module.exports.activeOrInActiveAdmin = async (req, res) => {
             return res.status(statusCode.BAD_REQUEST).json(errorResponse(statusCode.BAD_REQUEST, true, MSG.ADMIN_NOT_FOUND));
         }
 
-        const updatedAdmin = await adminAuthService.updateAdmin(req.query.id, { isActive: !admin.isActive });
+        const updatedAdmin = await adminAuthService.updateAdmin(req.query.id, { isActive: !admin.isActive, update_at: moment().format('DD/MM/YYYY, h:mm:ss A') });
 
         return res.status(statusCode.OK).json(successResponse(statusCode.OK, false, `${admin.first_name} ${admin.last_name} is ${updatedAdmin.isActive ? 'active' : 'inactive'}`));
     } catch (err) {

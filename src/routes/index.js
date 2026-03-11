@@ -10,5 +10,6 @@ route.use(authMiddleware);
 
 route.use('/admin', require('./auth/admin/admin.route'));
 route.use('/user', require('./auth/user/user.route'));
+route.use('/category', require('./category/category.route'));
 
 module.exports = route;
